@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roue Démo</title>
+  <style>
+    :root{--bg:#0b0b0c;--card:#141416;--text:#e9e9ea;--muted:#bdbdc2;--accent:#e85c6d;}
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:radial-gradient(1200px 600px at 20% 10%, #1a1a1f 0%, var(--bg) 60%);
+      color:var(--text);display:grid;min-height:100vh;place-items:center;padding:24px;
+    }
+    .wrap{width:min(760px,100%)}
+    .card{
+      background:linear-gradient(180deg,#19191d,var(--card));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.45);
+    }
+    .header{display:grid;gap:10px;justify-items:center;text-align:center}
+    h1{margin:0;font-size:26px}
+    .sub{margin:0;color:var(--muted);font-size:14px}
+    .wheel-zone{margin-top:18px;display:grid;justify-items:center;gap:14px;position:relative}
+    .pointer{
+      width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;
+      border-top:22px solid var(--accent);position:absolute;top:-6px;z-index:2;
+    }
+    canvas{
+      width:min(520px,92vw);height:auto;border-radius:50%;
+      background:#0f0f12;border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 0 0 8px rgba(255,255,255,.03),0 18px 50px rgba(0,0,0,.55);
+    }
+    .btn{
+      padding:12px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(232,92,109,.95), rgba(232,92,109,.75));
+      color:#0b0b0c;font-weight:800;letter-spacing:.6px;cursor:pointer;
+    }
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .result{margin-top:14px;min-height:24px;text-align:center;font-size:16px;font-weight:700}
+    .fineprint{margin:16px 0 0;color:rgba(255,255,255,.60);font-size:12px;text-align:center}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <div class="header">
+        <h1>Tourne la roue 🎡</h1>
+        <p class="sub">Démo Graphine (sans email, juste pour tester)</p>
+      </div>
+
+      <div class="wheel-zone">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" width="520" height="520"></canvas>
+        <button id="spin" class="btn">TOURNER</button>
+      </div>
+
+      <div id="result" class="result" role="status" aria-live="polite"></div>
+
+      <p class="fineprint">Astuce : 5 à 6 lots max = plus beau + plus lisible.</p>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

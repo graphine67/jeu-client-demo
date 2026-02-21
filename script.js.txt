@@ -1,0 +1,127 @@
+const prizes = [
+  { label: "-10%", weight: 3 },
+  { label: "Friandise offerte", weight: 2 },
+  { label: "Merci 🙂", weight: 4 },
+  { label: "-5%", weight: 3 },
+  { label: "Surprise", weight: 1 },
+  { label: "Retente", weight: 2 },
+];
+
+const colors = ["#2a2a2f", "#3a3a42"]; // alternance sobre
+const textColor = "#e9e9ea";
+const accent = "#e85c6d";
+
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+const btn = document.getElementById("spin");
+const resultEl = document.getElementById("result");
+
+let rotation = 0;
+let isSpinning = false;
+
+function weightedPick(items){
+  const total = items.reduce((s,i)=>s+i.weight,0);
+  let r = Math.random() * total;
+  for (const it of items){ r -= it.weight; if (r <= 0) return it; }
+  return items[items.length-1];
+}
+
+function wrapText(text, x, y, maxWidth, lineHeight){
+  const words = text.split(" ");
+  let line = "", lines = [];
+  for (let n=0; n<words.length; n++){
+    const testLine = line + words[n] + " ";
+    if (ctx.measureText(testLine).width > maxWidth && n > 0){
+      lines.push(line.trim()); line = words[n] + " ";
+    } else line = testLine;
+  }
+  lines.push(line.trim());
+  const startY = y - ((lines.length-1) * lineHeight)/2;
+  lines.forEach((l, i)=>ctx.fillText(l, x, startY + i*lineHeight));
+}
+
+function drawWheel(){
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2;
+  const radius = Math.min(cx, cy) - 10;
+
+  ctx.clearRect(0,0,w,h);
+  const slice = (Math.PI * 2) / prizes.length;
+
+  for (let i=0;i<prizes.length;i++){
+    const start = rotation + i * slice;
+    const end = start + slice;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, start, end);
+    ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+  }
+
+  ctx.fillStyle = textColor;
+  ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  for (let i=0;i<prizes.length;i++){
+    const ang = rotation + i*slice + slice/2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(ang);
+    ctx.translate(radius*0.62, 0);
+    wrapText(prizes[i].label, 0, 0, 170, 18);
+    ctx.restore();
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 62, 0, Math.PI*2);
+  ctx.fillStyle = "#0f0f12";
+  ctx.fill();
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = accent;
+  ctx.stroke();
+  ctx.fillStyle = textColor;
+  ctx.font = "800 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillText("JOUER", cx, cy);
+}
+
+function spin(){
+  if (isSpinning) return;
+  isSpinning = true;
+  btn.disabled = true;
+  resultEl.textContent = "";
+
+  const chosen = weightedPick(prizes);
+  const slice = (Math.PI * 2) / prizes.length;
+  const idx = prizes.findIndex(p => p.label === chosen.label);
+
+  const targetMid = (idx * slice) + (slice/2);
+  const targetRotation = (-Math.PI/2) - targetMid;
+  const extraTurns = (Math.PI * 2) * (4 + Math.random()*2);
+
+  const start = rotation;
+  const end = targetRotation + extraTurns;
+
+  const duration = 2400;
+  const t0 = performance.now();
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+  function anim(t){
+    const p = Math.min(1, (t - t0) / duration);
+    rotation = start + (end - start) * easeOutCubic(p);
+    drawWheel();
+    if (p < 1) requestAnimationFrame(anim);
+    else {
+      rotation = ((rotation % (Math.PI*2)) + (Math.PI*2)) % (Math.PI*2);
+      drawWheel();
+      resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+      isSpinning = false;
+      btn.disabled = false;
+    }
+  }
+  requestAnimationFrame(anim);
+}
+
+btn.addEventListener("click", spin);
+drawWheel();
