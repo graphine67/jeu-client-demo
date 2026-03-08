@@ -48,6 +48,50 @@ const emailBtn = document.getElementById("emailBtn");
 const emailMessage = document.getElementById("emailMessage");
 let currentEmail = "";
 btn.disabled = true;
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function validateEmail() {
+  const email = emailInput.value.trim().toLowerCase();
+
+  if (!email) {
+    emailMessage.textContent = "Merci de saisir votre email.";
+    return;
+  }
+
+  if (!isValidEmail(email)) {
+    emailMessage.textContent = "Adresse email invalide.";
+    return;
+  }
+
+  emailBtn.disabled = true;
+  emailMessage.textContent = "Vérification en cours...";
+
+  const { data, error } = await supabaseClient
+    .from("participants")
+    .select("email")
+    .eq("email", email);
+
+  if (error) {
+    emailMessage.textContent = "Erreur de vérification. Réessaie.";
+    emailBtn.disabled = false;
+    return;
+  }
+
+  if (data && data.length > 0) {
+    emailMessage.textContent = "Vous avez déjà participé avec cet email.";
+    btn.disabled = true;
+    emailBtn.disabled = false;
+    return;
+  }
+
+  currentEmail = email;
+  emailMessage.textContent = "Email validé. Vous pouvez tourner la roue.";
+  btn.disabled = false;
+  emailBtn.disabled = true;
+  emailInput.disabled = true;
+}
 const resultEl = document.getElementById("result");
 
 const spinSound = document.getElementById("spinSound");
@@ -323,6 +367,7 @@ function spin() {
 injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
 
