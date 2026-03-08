@@ -155,27 +155,28 @@ function drawWheel() {
 function fireConfetti() {
   if (typeof confetti !== "function") return;
 
-  confetti({
-    particleCount: 110,
-    spread: 75,
-    origin: { y: 0.6 }
-  });
+  const duration = 1200;
+  const end = Date.now() + duration;
 
-  setTimeout(() => {
+  (function frame() {
     confetti({
-      particleCount: 70,
-      spread: 95,
-      origin: { x: 0.25, y: 0.65 }
+      particleCount: 8,
+      angle: 60,
+      spread: 70,
+      origin: { x: 0, y: 0.6 }
     });
-  }, 180);
 
-  setTimeout(() => {
     confetti({
-      particleCount: 70,
-      spread: 95,
-      origin: { x: 0.75, y: 0.65 }
+      particleCount: 8,
+      angle: 120,
+      spread: 70,
+      origin: { x: 1, y: 0.6 }
     });
-  }, 320);
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
 }
 
 function safePlay(audioEl) {
@@ -251,3 +252,4 @@ function spin() {
 
 btn.addEventListener("click", spin);
 drawWheel();
+
