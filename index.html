@@ -3,63 +3,293 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Roue Démo</title>
+  <title>Roue personnalisée Graphine</title>
+
   <style>
-    :root{--bg:#0b0b0c;--card:#141416;--text:#e9e9ea;--muted:#bdbdc2;--accent:#e85c6d;}
+    :root{
+      --bg:#07080d;
+      --card:#12131a;
+      --card2:#171924;
+      --text:#f3f3f5;
+      --muted:#c9cad1;
+      --accent:#e85c6d;
+      --accent2:#113e53;
+      --beige:#efe2d0;
+      --ring:rgba(255,255,255,.08);
+    }
+
     *{box-sizing:border-box}
+
     body{
-      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:radial-gradient(1200px 600px at 20% 10%, #1a1a1f 0%, var(--bg) 60%);
-      color:var(--text);display:grid;min-height:100vh;place-items:center;padding:24px;
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(232,92,109,.18), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(17,62,83,.28), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(239,226,208,.08), transparent 25%),
+        linear-gradient(180deg, #0b0d14 0%, #06070b 100%);
+      overflow-x:hidden;
     }
-    .wrap{width:min(760px,100%)}
+
+    .wrap{
+      width:min(860px,100%);
+    }
+
     .card{
-      background:linear-gradient(180deg,#19191d,var(--card));
+      position:relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)),
+        linear-gradient(180deg, var(--card2), var(--card));
       border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.45);
+      border-radius:24px;
+      padding:28px 22px 24px;
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.03);
+      overflow:hidden;
     }
-    .header{display:grid;gap:10px;justify-items:center;text-align:center}
-    h1{margin:0;font-size:26px}
-    .sub{margin:0;color:var(--muted);font-size:14px}
-    .wheel-zone{margin-top:18px;display:grid;justify-items:center;gap:14px;position:relative}
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(232,92,109,.12), transparent 30%),
+        radial-gradient(circle at 100% 100%, rgba(17,62,83,.12), transparent 25%);
+    }
+
+    .header{
+      display:grid;
+      gap:10px;
+      justify-items:center;
+      text-align:center;
+      margin-bottom:8px;
+      position:relative;
+      z-index:1;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(28px, 4vw, 38px);
+      line-height:1.1;
+    }
+
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      max-width:560px;
+      line-height:1.5;
+    }
+
+    .wheel-zone{
+      margin-top:20px;
+      display:grid;
+      justify-items:center;
+      gap:18px;
+      position:relative;
+      z-index:1;
+    }
+
     .pointer{
-      width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;
-      border-top:22px solid var(--accent);position:absolute;top:-6px;z-index:2;
+      width:0;
+      height:0;
+      border-left:16px solid transparent;
+      border-right:16px solid transparent;
+      border-top:26px solid var(--accent);
+      position:absolute;
+      top:-8px;
+      z-index:5;
+      filter:drop-shadow(0 4px 10px rgba(232,92,109,.35));
     }
+
+    .wheel-holder{
+      position:relative;
+      display:grid;
+      place-items:center;
+    }
+
     canvas{
-      width:min(520px,92vw);height:auto;border-radius:50%;
-      background:#0f0f12;border:1px solid rgba(255,255,255,.10);
-      box-shadow:inset 0 0 0 8px rgba(255,255,255,.03),0 18px 50px rgba(0,0,0,.55);
+      width:min(520px,92vw);
+      height:auto;
+      border-radius:50%;
+      background:#0f1118;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:
+        inset 0 0 0 8px rgba(255,255,255,.03),
+        inset 0 0 40px rgba(255,255,255,.03),
+        0 18px 50px rgba(0,0,0,.55);
     }
+
+    .center-logo{
+      position:absolute;
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.14), transparent 45%),
+        linear-gradient(180deg, #0f1117, #07080d);
+      border:5px solid var(--accent);
+      box-shadow:
+        0 0 0 8px rgba(255,255,255,.03),
+        0 10px 26px rgba(0,0,0,.4),
+        0 0 18px rgba(232,92,109,.28);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:4;
+      overflow:hidden;
+    }
+
+    .center-logo img{
+      width:74px;
+      height:auto;
+      display:block;
+      object-fit:contain;
+    }
+
     .btn{
-      padding:12px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
-      background:linear-gradient(180deg, rgba(232,92,109,.95), rgba(232,92,109,.75));
-      color:#0b0b0c;font-weight:800;letter-spacing:.6px;cursor:pointer;
+      padding:14px 24px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0)),
+        linear-gradient(135deg, #f26f7f 0%, #e85c6d 45%, #cf4d5d 100%);
+      color:#0b0b0c;
+      font-weight:900;
+      letter-spacing:.8px;
+      cursor:pointer;
+      box-shadow:
+        0 10px 24px rgba(232,92,109,.28),
+        inset 0 1px 0 rgba(255,255,255,.22);
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
     }
-    .btn:disabled{opacity:.55;cursor:not-allowed}
-    .result{margin-top:14px;min-height:24px;text-align:center;font-size:16px;font-weight:700}
-    .fineprint{margin:16px 0 0;color:rgba(255,255,255,.60);font-size:12px;text-align:center}
+
+    .btn:hover{
+      transform:translateY(-2px) scale(1.03);
+      box-shadow:
+        0 14px 30px rgba(232,92,109,.35),
+        inset 0 1px 0 rgba(255,255,255,.22);
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .result{
+      margin-top:16px;
+      min-height:28px;
+      text-align:center;
+      font-size:18px;
+      font-weight:800;
+      position:relative;
+      z-index:1;
+    }
+
+    .fineprint{
+      margin:16px 0 0;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      text-align:center;
+      position:relative;
+      z-index:1;
+    }
+
+    .sparkles{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .sparkles span{
+      position:absolute;
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:rgba(255,255,255,.55);
+      box-shadow:0 0 12px rgba(255,255,255,.35);
+      animation:twinkle 3.2s infinite ease-in-out;
+    }
+
+    .sparkles span:nth-child(1){top:14%;left:10%;animation-delay:0s}
+    .sparkles span:nth-child(2){top:20%;right:14%;animation-delay:.6s}
+    .sparkles span:nth-child(3){top:62%;left:8%;animation-delay:1.2s}
+    .sparkles span:nth-child(4){top:72%;right:10%;animation-delay:1.8s}
+    .sparkles span:nth-child(5){top:10%;left:50%;animation-delay:2.4s}
+    .sparkles span:nth-child(6){bottom:10%;left:46%;animation-delay:3s}
+
+    @keyframes twinkle{
+      0%,100%{opacity:.25;transform:scale(.8)}
+      50%{opacity:1;transform:scale(1.3)}
+    }
+
+    @media (max-width:640px){
+      .card{padding:22px 14px 20px}
+      .center-logo{
+        width:96px;
+        height:96px;
+      }
+      .center-logo img{
+        width:60px;
+      }
+      .result{
+        font-size:16px;
+      }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
     <div class="card">
+      <div class="sparkles" aria-hidden="true">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+
       <div class="header">
         <h1>Tourne la roue 🎡</h1>
-        <p class="sub">Démo Graphine (sans email, juste pour tester)</p>
+        <p class="sub">
+          Exemple de roue personnalisable pour événements, stands, commerces et animations.
+        </p>
       </div>
 
       <div class="wheel-zone">
         <div class="pointer" aria-hidden="true"></div>
-        <canvas id="wheel" width="520" height="520"></canvas>
+
+        <div class="wheel-holder">
+          <canvas id="wheel" width="520" height="520"></canvas>
+
+          <div class="center-logo">
+            <img src="assets/logo-graphine.png" alt="Logo Graphine">
+          </div>
+        </div>
+
         <button id="spin" class="btn">TOURNER</button>
       </div>
 
       <div id="result" class="result" role="status" aria-live="polite"></div>
 
-      <p class="fineprint">Astuce : 5 à 6 lots max = plus beau + plus lisible.</p>
+      <p class="fineprint">
+        Démo Graphine • roue interactive personnalisable sur mesure
+      </p>
     </div>
   </main>
+
+  <!-- Confettis -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Sons -->
+  <audio id="spinSound" src="assets/spin.mp3" preload="auto"></audio>
+  <audio id="winSound" src="assets/win.mp3" preload="auto"></audio>
 
   <script src="script.js"></script>
 </body>
