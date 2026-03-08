@@ -7,7 +7,7 @@ const prizes = [
   { label: "Retente", weight: 2 },
 ];
 
-// Palette plus Graphine / festive
+// Palette Graphine / festive
 const colors = [
   "#113e53", // bleu pétrole
   "#e85c6d", // corail
@@ -15,6 +15,16 @@ const colors = [
   "#efe2d0", // beige
   "#2f3140", // gris bleuté
   "#cf4d5d"  // corail foncé
+];
+
+const confettiColors = [
+  "#e85c6d",
+  "#113e53",
+  "#efe2d0",
+  "#ffffff",
+  "#ffd166",
+  "#8ecae6",
+  "#c77dff"
 ];
 
 const textColor = "#f3f3f5";
@@ -31,6 +41,7 @@ const winSound = document.getElementById("winSound");
 
 let rotation = 0;
 let isSpinning = false;
+let confettiLayer = null;
 
 function weightedPick(items) {
   const total = items.reduce((sum, item) => sum + item.weight, 0);
@@ -77,7 +88,7 @@ function drawWheel() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // Ombre douce extérieure
+  // Ombre extérieure
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, radius + 2, 0, Math.PI * 2);
@@ -100,13 +111,12 @@ function drawWheel() {
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
 
-    // trait séparateur léger
     ctx.strokeStyle = "rgba(255,255,255,0.08)";
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
-  // Cercle extérieur subtil
+  // Cercle extérieur
   ctx.beginPath();
   ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,255,255,0.10)";
@@ -126,7 +136,6 @@ function drawWheel() {
     ctx.rotate(ang);
     ctx.translate(radius * 0.66, 0);
 
-    // Texte sombre sur fond beige, clair ailleurs
     const currentColor = colors[i % colors.length];
     ctx.fillStyle = currentColor === "#efe2d0" ? darkText : textColor;
 
@@ -134,7 +143,7 @@ function drawWheel() {
     ctx.restore();
   }
 
-  // Cercle central décoratif derrière le logo HTML
+  // Cercle central décoratif
   ctx.beginPath();
   ctx.arc(cx, cy, 65, 0, Math.PI * 2);
   ctx.fillStyle = "#0b0d13";
@@ -144,39 +153,11 @@ function drawWheel() {
   ctx.strokeStyle = accent;
   ctx.stroke();
 
-  // Petit anneau interne
   ctx.beginPath();
   ctx.arc(cx, cy, 50, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,255,255,0.08)";
   ctx.lineWidth = 2;
   ctx.stroke();
-}
-
-function fireConfetti() {
-  if (typeof confetti !== "function") return;
-
-  const duration = 1200;
-  const end = Date.now() + duration;
-
-  (function frame() {
-    confetti({
-      particleCount: 8,
-      angle: 60,
-      spread: 70,
-      origin: { x: 0, y: 0.6 }
-    });
-
-    confetti({
-      particleCount: 8,
-      angle: 120,
-      spread: 70,
-      origin: { x: 1, y: 0.6 }
-    });
-
-    if (Date.now() < end) {
-      requestAnimationFrame(frame);
-    }
-  })();
 }
 
 function safePlay(audioEl) {
@@ -187,9 +168,89 @@ function safePlay(audioEl) {
 
   if (playPromise !== undefined) {
     playPromise.catch(() => {
-      // certains navigateurs bloquent parfois le son, ce n’est pas grave
+      // certains navigateurs bloquent parfois le son
     });
   }
+}
+
+function ensureConfettiLayer() {
+  if (confettiLayer) return confettiLayer;
+
+  confettiLayer = document.createElement("div");
+  confettiLayer.id = "confetti-layer";
+  confettiLayer.style.position = "fixed";
+  confettiLayer.style.inset = "0";
+  confettiLayer.style.pointerEvents = "none";
+  confettiLayer.style.overflow = "hidden";
+  confettiLayer.style.zIndex = "9999";
+  document.body.appendChild(confettiLayer);
+
+  return confettiLayer;
+}
+
+function fireConfetti() {
+  const layer = ensureConfettiLayer();
+
+  // Vide les anciens confettis
+  layer.innerHTML = "";
+
+  const total = 140;
+
+  for (let i = 0; i < total; i++) {
+    const piece = document.createElement("span");
+
+    const size = 6 + Math.random() * 10;
+    const left = Math.random() * 100;
+    const delay = Math.random() * 0.35;
+    const duration = 2.4 + Math.random() * 1.8;
+    const drift = (Math.random() - 0.5) * 220;
+    const rotateStart = Math.random() * 360;
+    const rotateEnd = rotateStart + 360 + Math.random() * 720;
+    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    const shape = Math.random() > 0.7 ? "50%" : "2px";
+
+    piece.style.position = "absolute";
+    piece.style.top = "-20px";
+    piece.style.left = `${left}vw`;
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size * 0.6}px`;
+    piece.style.background = color;
+    piece.style.borderRadius = shape;
+    piece.style.opacity = "0.95";
+    piece.style.transform = `translate3d(0,0,0) rotate(${rotateStart}deg)`;
+    piece.style.boxShadow = "0 0 6px rgba(255,255,255,0.18)";
+    piece.style.animation = `confetti-fall ${duration}s ease-in forwards ${delay}s`;
+
+    piece.style.setProperty("--drift", `${drift}px`);
+    piece.style.setProperty("--rotate-end", `${rotateEnd}deg`);
+
+    layer.appendChild(piece);
+  }
+
+  // nettoyage
+  setTimeout(() => {
+    if (layer) layer.innerHTML = "";
+  }, 4500);
+}
+
+function injectConfettiStyles() {
+  if (document.getElementById("confetti-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "confetti-style";
+  style.textContent = `
+    @keyframes confetti-fall {
+      0% {
+        transform: translate3d(0, -20px, 0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift), 110vh, 0) rotate(var(--rotate-end));
+        opacity: 0.9;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function spin() {
@@ -207,13 +268,8 @@ function spin() {
     (p) => p.label === chosen.label && p.weight === chosen.weight
   );
 
-  // Milieu du segment choisi
   const targetMid = idx * slice + slice / 2;
-
-  // La flèche est en haut, donc on vise -PI/2
   const targetRotation = -Math.PI / 2 - targetMid;
-
-  // Tours supplémentaires pour le spectacle
   const extraTurns = (Math.PI * 2) * (5 + Math.random() * 1.5);
 
   const start = rotation;
@@ -250,6 +306,6 @@ function spin() {
   requestAnimationFrame(animate);
 }
 
+injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
-
