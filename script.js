@@ -7,8 +7,18 @@ const prizes = [
   { label: "Retente", weight: 2 },
 ];
 
-const colors = ["#2a2a2f", "#3a3a42"]; // alternance sobre
-const textColor = "#e9e9ea";
+// Palette plus Graphine / festive
+const colors = [
+  "#113e53", // bleu pétrole
+  "#e85c6d", // corail
+  "#2a2a2f", // anthracite
+  "#efe2d0", // beige
+  "#2f3140", // gris bleuté
+  "#cf4d5d"  // corail foncé
+];
+
+const textColor = "#f3f3f5";
+const darkText = "#111111";
 const accent = "#e85c6d";
 
 const canvas = document.getElementById("wheel");
@@ -16,111 +26,227 @@ const ctx = canvas.getContext("2d");
 const btn = document.getElementById("spin");
 const resultEl = document.getElementById("result");
 
+const spinSound = document.getElementById("spinSound");
+const winSound = document.getElementById("winSound");
+
 let rotation = 0;
 let isSpinning = false;
 
-function weightedPick(items){
-  const total = items.reduce((s,i)=>s+i.weight,0);
+function weightedPick(items) {
+  const total = items.reduce((sum, item) => sum + item.weight, 0);
   let r = Math.random() * total;
-  for (const it of items){ r -= it.weight; if (r <= 0) return it; }
-  return items[items.length-1];
-}
 
-function wrapText(text, x, y, maxWidth, lineHeight){
-  const words = text.split(" ");
-  let line = "", lines = [];
-  for (let n=0; n<words.length; n++){
-    const testLine = line + words[n] + " ";
-    if (ctx.measureText(testLine).width > maxWidth && n > 0){
-      lines.push(line.trim()); line = words[n] + " ";
-    } else line = testLine;
+  for (const item of items) {
+    r -= item.weight;
+    if (r <= 0) return item;
   }
-  lines.push(line.trim());
-  const startY = y - ((lines.length-1) * lineHeight)/2;
-  lines.forEach((l, i)=>ctx.fillText(l, x, startY + i*lineHeight));
+
+  return items[items.length - 1];
 }
 
-function drawWheel(){
-  const w = canvas.width, h = canvas.height;
-  const cx = w/2, cy = h/2;
-  const radius = Math.min(cx, cy) - 10;
+function wrapText(text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+  const lines = [];
 
-  ctx.clearRect(0,0,w,h);
+  for (let i = 0; i < words.length; i++) {
+    const testLine = line + words[i] + " ";
+    if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+      lines.push(line.trim());
+      line = words[i] + " ";
+    } else {
+      line = testLine;
+    }
+  }
+
+  lines.push(line.trim());
+
+  const startY = y - ((lines.length - 1) * lineHeight) / 2;
+  lines.forEach((l, index) => {
+    ctx.fillText(l, x, startY + index * lineHeight);
+  });
+}
+
+function drawWheel() {
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = Math.min(cx, cy) - 10;
   const slice = (Math.PI * 2) / prizes.length;
 
-  for (let i=0;i<prizes.length;i++){
+  ctx.clearRect(0, 0, w, h);
+
+  // Ombre douce extérieure
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius + 2, 0, Math.PI * 2);
+  ctx.fillStyle = "#0d0f15";
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 30;
+  ctx.fill();
+  ctx.restore();
+
+  // Segments
+  for (let i = 0; i < prizes.length; i++) {
     const start = rotation + i * slice;
     const end = start + slice;
+
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, radius, start, end);
     ctx.closePath();
+
     ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
+
+    // trait séparateur léger
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   }
 
-  ctx.fillStyle = textColor;
-  ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  // Cercle extérieur subtil
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Textes
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.font = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
-  for (let i=0;i<prizes.length;i++){
-    const ang = rotation + i*slice + slice/2;
+  for (let i = 0; i < prizes.length; i++) {
+    const ang = rotation + i * slice + slice / 2;
+
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(ang);
-    ctx.translate(radius*0.62, 0);
-    wrapText(prizes[i].label, 0, 0, 170, 18);
+    ctx.translate(radius * 0.66, 0);
+
+    // Texte sombre sur fond beige, clair ailleurs
+    const currentColor = colors[i % colors.length];
+    ctx.fillStyle = currentColor === "#efe2d0" ? darkText : textColor;
+
+    wrapText(prizes[i].label, 0, 0, 150, 18);
     ctx.restore();
   }
 
+  // Cercle central décoratif derrière le logo HTML
   ctx.beginPath();
-  ctx.arc(cx, cy, 62, 0, Math.PI*2);
-  ctx.fillStyle = "#0f0f12";
+  ctx.arc(cx, cy, 65, 0, Math.PI * 2);
+  ctx.fillStyle = "#0b0d13";
   ctx.fill();
+
   ctx.lineWidth = 6;
   ctx.strokeStyle = accent;
   ctx.stroke();
-  ctx.fillStyle = textColor;
-  ctx.font = "800 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText("JOUER", cx, cy);
+
+  // Petit anneau interne
+  ctx.beginPath();
+  ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
-function spin(){
+function fireConfetti() {
+  if (typeof confetti !== "function") return;
+
+  confetti({
+    particleCount: 110,
+    spread: 75,
+    origin: { y: 0.6 }
+  });
+
+  setTimeout(() => {
+    confetti({
+      particleCount: 70,
+      spread: 95,
+      origin: { x: 0.25, y: 0.65 }
+    });
+  }, 180);
+
+  setTimeout(() => {
+    confetti({
+      particleCount: 70,
+      spread: 95,
+      origin: { x: 0.75, y: 0.65 }
+    });
+  }, 320);
+}
+
+function safePlay(audioEl) {
+  if (!audioEl) return;
+
+  audioEl.currentTime = 0;
+  const playPromise = audioEl.play();
+
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      // certains navigateurs bloquent parfois le son, ce n’est pas grave
+    });
+  }
+}
+
+function spin() {
   if (isSpinning) return;
+
   isSpinning = true;
   btn.disabled = true;
   resultEl.textContent = "";
 
+  safePlay(spinSound);
+
   const chosen = weightedPick(prizes);
   const slice = (Math.PI * 2) / prizes.length;
-  const idx = prizes.findIndex(p => p.label === chosen.label);
+  const idx = prizes.findIndex(
+    (p) => p.label === chosen.label && p.weight === chosen.weight
+  );
 
-  const targetMid = (idx * slice) + (slice/2);
-  const targetRotation = (-Math.PI/2) - targetMid;
-  const extraTurns = (Math.PI * 2) * (4 + Math.random()*2);
+  // Milieu du segment choisi
+  const targetMid = idx * slice + slice / 2;
+
+  // La flèche est en haut, donc on vise -PI/2
+  const targetRotation = -Math.PI / 2 - targetMid;
+
+  // Tours supplémentaires pour le spectacle
+  const extraTurns = (Math.PI * 2) * (5 + Math.random() * 1.5);
 
   const start = rotation;
   const end = targetRotation + extraTurns;
 
-  const duration = 2400;
-  const t0 = performance.now();
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const duration = 3200;
+  const startTime = performance.now();
 
-  function anim(t){
-    const p = Math.min(1, (t - t0) / duration);
-    rotation = start + (end - start) * easeOutCubic(p);
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  function animate(now) {
+    const progress = Math.min(1, (now - startTime) / duration);
+    const eased = easeOutCubic(progress);
+
+    rotation = start + (end - start) * eased;
     drawWheel();
-    if (p < 1) requestAnimationFrame(anim);
-    else {
-      rotation = ((rotation % (Math.PI*2)) + (Math.PI*2)) % (Math.PI*2);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      rotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       drawWheel();
+
+      safePlay(winSound);
+      fireConfetti();
+
       resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+
       isSpinning = false;
       btn.disabled = false;
     }
   }
-  requestAnimationFrame(anim);
+
+  requestAnimationFrame(animate);
 }
 
 btn.addEventListener("click", spin);
