@@ -409,7 +409,10 @@ function spin() {
       return;
     }
 
-    resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
+    resultEl.textContent = "Suspense...";
+setTimeout(() => {
+  resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
+}, 800);
     isSpinning = false;
     btn.disabled = true;
   }
@@ -423,5 +426,6 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
 
