@@ -375,45 +375,49 @@
     }
 
     @media (max-width:640px){
-      .card{
-        padding:22px 14px 20px;
-      }
+  body{
+    padding:16px;
+  }
 
-      .center-logo{
-        width:96px;
-        height:96px;
-      }
+  .card{
+    padding:22px 14px 20px;
+  }
 
-      .center-logo img{
-        width:60px;
-      }
+  .center-logo{
+    width:96px;
+    height:96px;
+  }
 
-      .result{
-        font-size:16px;
-      }
+  .center-logo img{
+    width:60px;
+  }
 
-      .wheel-zone{
-        width:100%;
-        justify-items:center;
-      }
+  .result{
+    font-size:16px;
+  }
 
-      .wheel-holder{
-        width:100%;
-        max-width:92vw;
-        margin:0 auto;
-      }
+  .wheel-zone{
+    width:100%;
+    align-items:center;
+  }
 
-      canvas{
-        width:92vw;
-        max-width:92vw;
-        margin:0 auto;
-      }
+  .wheel-holder{
+    width:100%;
+    max-width:calc(100vw - 60px);
+    margin:0 auto;
+  }
 
-      .pointer{
-        left:50%;
-        transform:translateX(-50%);
-      }
-    }
+  canvas{
+    width:100%;
+    max-width:calc(100vw - 60px);
+    margin:0 auto;
+  }
+
+  .pointer{
+    left:50%;
+    transform:translateX(-50%);
+  }
+}
   </style>
 </head>
 <body>
@@ -506,4 +510,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
