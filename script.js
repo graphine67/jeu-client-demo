@@ -338,7 +338,7 @@ function spin() {
 
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-  function animate(now) {
+  async function animate(now) {
     const progress = Math.min(1, (now - startTime) / duration);
     const eased = easeOutCubic(progress);
 
@@ -384,6 +384,7 @@ injectConfettiStyles();
 emailBtn.addEventListener("click", validateEmail);
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
 
