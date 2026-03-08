@@ -469,9 +469,35 @@ async function spin() {
 
     resultEl.textContent = "Suspense...";
 
-    setTimeout(() => {
-      resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
-    }, 800);
+setTimeout(() => {
+  resultEl.innerHTML = `
+  🎉 Résultat : ${landedPrize.label}
+
+  <br><br>
+
+  💡 Cette roue est une démonstration.
+
+  <br>
+
+  Vous souhaitez une roue personnalisée pour votre commerce,
+  votre stand ou votre événement ?
+
+  <br><br>
+
+  <a href="https://graph-ine.fr" target="_blank" style="
+  background:#e85c6d;
+  color:white;
+  padding:10px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:bold;
+  display:inline-block;
+  margin-top:8px;
+  ">
+  Découvrir Graphine
+  </a>
+  `;
+}, 800);
 
     isSpinning = false;
     btn.disabled = true;
@@ -487,3 +513,4 @@ emailBtn.addEventListener("click", validateEmail);
 btn.addEventListener("click", spin);
 
 console.log("Supabase connecté :", supabaseClient);
+
