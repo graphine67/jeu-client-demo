@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Roue personnalisée Graphine</title>
+  <title>Roue interactive Graphine</title>
+  <meta
+    name="description"
+    content="Animation de roue interactive personnalisable pour événements, commerces, stands et opérations marketing."
+  />
 
   <style>
     :root{
@@ -16,9 +20,13 @@
       --accent2:#113e53;
       --beige:#efe2d0;
       --ring:rgba(255,255,255,.08);
+      --success:#7dd3a7;
+      --error:#ff8b98;
     }
 
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+    }
 
     body{
       margin:0;
@@ -37,7 +45,9 @@
     }
 
     .wrap{
-      width:min(860px,100%);
+      width:min(880px,100%);
+      display:grid;
+      gap:18px;
     }
 
     .card{
@@ -64,6 +74,35 @@
         radial-gradient(circle at 100% 100%, rgba(17,62,83,.12), transparent 25%);
     }
 
+    .sparkles{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .sparkles span{
+      position:absolute;
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:rgba(255,255,255,.55);
+      box-shadow:0 0 12px rgba(255,255,255,.35);
+      animation:twinkle 3.2s infinite ease-in-out;
+    }
+
+    .sparkles span:nth-child(1){top:14%;left:10%;animation-delay:0s}
+    .sparkles span:nth-child(2){top:20%;right:14%;animation-delay:.6s}
+    .sparkles span:nth-child(3){top:62%;left:8%;animation-delay:1.2s}
+    .sparkles span:nth-child(4){top:72%;right:10%;animation-delay:1.8s}
+    .sparkles span:nth-child(5){top:10%;left:50%;animation-delay:2.4s}
+    .sparkles span:nth-child(6){bottom:10%;left:46%;animation-delay:3s}
+
+    @keyframes twinkle{
+      0%,100%{opacity:.25;transform:scale(.8)}
+      50%{opacity:1;transform:scale(1.3)}
+    }
+
     .header{
       display:grid;
       gap:10px;
@@ -84,8 +123,129 @@
       margin:0;
       color:var(--muted);
       font-size:14px;
-      max-width:560px;
+      max-width:580px;
       line-height:1.5;
+    }
+
+    .email-box{
+      margin:18px auto 8px;
+      max-width:460px;
+      width:100%;
+      display:grid;
+      gap:12px;
+      position:relative;
+      z-index:1;
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .email-box-title{
+      margin:0;
+      font-size:15px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .email-box input[type="email"]{
+      width:100%;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .email-box input[type="email"]:focus{
+      border-color:rgba(232,92,109,.6);
+      box-shadow:0 0 0 4px rgba(232,92,109,.12);
+      background:rgba(255,255,255,.06);
+    }
+
+    .email-box input::placeholder{
+      color:rgba(255,255,255,.45);
+    }
+
+    .btn{
+      padding:14px 24px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0)),
+        linear-gradient(135deg, #f26f7f 0%, #e85c6d 45%, #cf4d5d 100%);
+      color:#0b0b0c;
+      font-weight:900;
+      letter-spacing:.4px;
+      cursor:pointer;
+      box-shadow:
+        0 10px 24px rgba(232,92,109,.28),
+        inset 0 1px 0 rgba(255,255,255,.22);
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:
+        0 14px 30px rgba(232,92,109,.35),
+        inset 0 1px 0 rgba(255,255,255,.22);
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:
+        0 6px 16px rgba(232,92,109,.15),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .email-btn{
+      width:100%;
+    }
+
+    .rgpd-label{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .rgpd-label input{
+      margin-top:2px;
+      accent-color:var(--accent);
+      transform:translateY(1px);
+    }
+
+    .rgpd-text{
+      margin:0;
+      font-size:11px;
+      line-height:1.45;
+      color:rgba(255,255,255,.58);
+      text-align:left;
+    }
+
+    .email-message{
+      margin:0;
+      min-height:20px;
+      text-align:center;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .email-message.success{
+      color:var(--success);
+    }
+
+    .email-message.error{
+      color:var(--error);
     }
 
     .wheel-zone{
@@ -95,6 +255,12 @@
       gap:18px;
       position:relative;
       z-index:1;
+    }
+
+    .wheel-holder{
+      position:relative;
+      display:grid;
+      place-items:center;
     }
 
     .pointer{
@@ -107,12 +273,6 @@
       top:-8px;
       z-index:5;
       filter:drop-shadow(0 4px 10px rgba(232,92,109,.35));
-    }
-
-    .wheel-holder{
-      position:relative;
-      display:grid;
-      place-items:center;
     }
 
     canvas{
@@ -154,36 +314,6 @@
       object-fit:contain;
     }
 
-    .btn{
-      padding:14px 24px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0)),
-        linear-gradient(135deg, #f26f7f 0%, #e85c6d 45%, #cf4d5d 100%);
-      color:#0b0b0c;
-      font-weight:900;
-      letter-spacing:.8px;
-      cursor:pointer;
-      box-shadow:
-        0 10px 24px rgba(232,92,109,.28),
-        inset 0 1px 0 rgba(255,255,255,.22);
-      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-    }
-
-    .btn:hover{
-      transform:translateY(-2px) scale(1.03);
-      box-shadow:
-        0 14px 30px rgba(232,92,109,.35),
-        inset 0 1px 0 rgba(255,255,255,.22);
-    }
-
-    .btn:disabled{
-      opacity:.55;
-      cursor:not-allowed;
-      transform:none;
-    }
-
     .result{
       margin-top:16px;
       min-height:28px;
@@ -201,188 +331,148 @@
       text-align:center;
       position:relative;
       z-index:1;
+      line-height:1.45;
     }
 
-    .sparkles{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
+    .features{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:14px;
+      position:relative;
+      z-index:1;
+      color:var(--muted);
     }
 
-    .sparkles span{
-      position:absolute;
-      width:6px;
-      height:6px;
-      border-radius:50%;
-      background:rgba(255,255,255,.55);
-      box-shadow:0 0 12px rgba(255,255,255,.35);
-      animation:twinkle 3.2s infinite ease-in-out;
+    .features strong{
+      display:block;
+      margin-bottom:8px;
+      color:var(--text);
+      font-size:15px;
     }
 
-    .sparkles span:nth-child(1){top:14%;left:10%;animation-delay:0s}
-    .sparkles span:nth-child(2){top:20%;right:14%;animation-delay:.6s}
-    .sparkles span:nth-child(3){top:62%;left:8%;animation-delay:1.2s}
-    .sparkles span:nth-child(4){top:72%;right:10%;animation-delay:1.8s}
-    .sparkles span:nth-child(5){top:10%;left:50%;animation-delay:2.4s}
-    .sparkles span:nth-child(6){bottom:10%;left:46%;animation-delay:3s}
+    .features ul{
+      margin:0;
+      padding-left:18px;
+      line-height:1.6;
+    }
 
-    @keyframes twinkle{
-      0%,100%{opacity:.25;transform:scale(.8)}
-      50%{opacity:1;transform:scale(1.3)}
+    .features li + li{
+      margin-top:4px;
     }
 
     @media (max-width:640px){
-      .card{padding:22px 14px 20px}
+      body{
+        padding:16px;
+      }
+
+      .card{
+        padding:22px 14px 20px;
+      }
+
+      .email-box{
+        padding:14px;
+      }
+
       .center-logo{
         width:96px;
         height:96px;
       }
+
       .center-logo img{
         width:60px;
       }
+
       .result{
         font-size:16px;
       }
     }
-  .features{
-  margin-top:20px;
-  padding:14px 18px;
-  border-radius:12px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);
-  font-size:14px;
-  position:relative;
-  z-index:1;
-}
-
-.features strong{
-  display:block;
-  margin-bottom:6px;
-}
-
-.features ul{
-  margin:0;
-  padding-left:18px;
-  color:var(--muted);
-}
-  .email-box{
-  margin:18px auto 8px;
-  max-width:420px;
-  display:grid;
-  gap:10px;
-  position:relative;
-  z-index:1;
-}
-
-.email-box input{
-  width:100%;
-  padding:14px 16px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-  color:var(--text);
-  font-size:15px;
-  outline:none;
-}
-
-.email-box input::placeholder{
-  color:rgba(255,255,255,.45);
-}
-
-.email-btn{
-  width:100%;
-}
-
-.email-message{
-  margin:0;
-  min-height:20px;
-  text-align:center;
-  font-size:14px;
-  color:var(--muted);
-}
-  .rgpd-label{
-  display:flex;
-  align-items:flex-start;
-  gap:8px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.4;
-}
-
-.rgpd-label input{
-  margin-top:2px;
-}
-
-.rgpd-text{
-  margin:0;
-  font-size:11px;
-  line-height:1.4;
-  color:rgba(255,255,255,.55);
-}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <div class="card">
+    <section class="card">
       <div class="sparkles" aria-hidden="true">
         <span></span><span></span><span></span>
         <span></span><span></span><span></span>
       </div>
 
-      <div class="header">
-        <h1>Tourne la roue 🎡</h1>
+      <header class="header">
+        <h1>Tournez la roue 🎡</h1>
         <p class="sub">
-          Exemple de roue personnalisable pour événements, stands, commerces et animations.
+          Démo d’animation interactive signée Graphine, pensée pour les événements,
+          les commerces, les stands et les opérations marketing.
         </p>
-      </div>
-<div class="email-box">
-  <input type="email" id="emailInput" placeholder="Votre adresse email" />
-  <button id="emailBtn" class="btn email-btn">Valider mon email</button>
+      </header>
 
-  <label class="rgpd-label">
-    <input type="checkbox" id="rgpdCheck">
-    J’accepte que mon email soit utilisé par Graphine dans le cadre de cette animation.
-  </label>
+      <section class="email-box" aria-label="Validation de l'email">
+        <p class="email-box-title">Validez votre adresse email pour participer</p>
 
-  <p class="rgpd-text">
-    Les données collectées sont utilisées uniquement pour cette animation. 
-Contact : contact@graph-ine.fr
-  </p>
+        <input
+          type="email"
+          id="emailInput"
+          placeholder="Votre adresse email"
+          autocomplete="email"
+          inputmode="email"
+        />
 
-  <p id="emailMessage" class="email-message"></p>
-</div>
-      <div class="wheel-zone">
+        <button id="emailBtn" class="btn email-btn" type="button">
+          Valider mon email
+        </button>
+
+        <label class="rgpd-label" for="rgpdCheck">
+          <input type="checkbox" id="rgpdCheck" />
+          <span>
+            J’accepte que mon adresse email soit utilisée par Graphine dans le cadre
+            de cette animation.
+          </span>
+        </label>
+
+        <p class="rgpd-text">
+          Les données collectées sont utilisées uniquement pour cette animation et,
+          le cas échéant, pour l’envoi d’un email de remerciement et de présentation
+          du service. Contact : contact@graph-ine.fr
+        </p>
+
+        <p id="emailMessage" class="email-message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="wheel-zone">
         <div class="pointer" aria-hidden="true"></div>
 
         <div class="wheel-holder">
           <canvas id="wheel" width="520" height="520"></canvas>
 
           <div class="center-logo">
-            <img src="assets/logo-graphine.png" alt="Logo Graphine">
+            <img src="assets/logo-graphine.png" alt="Logo Graphine" />
           </div>
         </div>
 
-        <button id="spin" class="btn">TOURNER</button>
-      </div>
+        <button id="spin" class="btn" type="button" disabled>
+          TOURNER
+        </button>
+      </section>
 
       <div id="result" class="result" role="status" aria-live="polite"></div>
 
       <p class="fineprint">
-        Démo Graphine • roue interactive personnalisable sur mesure
+        Démo Graphine • roue interactive personnalisable sur mesure<br>
+        Une seule participation par adresse email
       </p>
-    </div>
+    </section>
+
+    <aside class="features">
+      <strong>Cette animation peut être personnalisée pour :</strong>
+      <ul>
+        <li>les couleurs, le logo et l’univers de votre marque</li>
+        <li>des lots, messages ou scénarios sur mesure</li>
+        <li>une intégration via QR code, tablette, site ou stand</li>
+        <li>des animations marketing pour événements et commerces</li>
+      </ul>
+    </aside>
   </main>
-<div class="features">
-  <strong>Personnalisation possible :</strong>
-  <ul>
-    <li>Couleurs et logo de votre marque</li>
-    <li>Lots et messages personnalisés</li>
-    <li>Intégration site, QR code ou événement</li>
-    <li>Animation marketing pour stands et commerces</li>
-  </ul>
-</div>
-  <!-- Sons -->
+
   <audio id="spinSound" src="assets/spin.mp3" preload="auto"></audio>
   <audio id="winSound" src="assets/win.mp3" preload="auto"></audio>
 
@@ -390,12 +480,3 @@ Contact : contact@graph-ine.fr
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
