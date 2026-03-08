@@ -113,16 +113,16 @@ async function validateEmail() {
   }
 }
 
-function weightedPick(items) {
+function weightedPickIndex(items) {
   const total = items.reduce((sum, item) => sum + item.weight, 0);
   let r = Math.random() * total;
 
-  for (const item of items) {
-    r -= item.weight;
-    if (r <= 0) return item;
+  for (let i = 0; i < items.length; i++) {
+    r -= items[i].weight;
+    if (r <= 0) return i;
   }
 
-  return items[items.length - 1];
+  return items.length - 1;
 }
 
 function wrapText(text, x, y, maxWidth, lineHeight) {
@@ -233,7 +233,7 @@ function safePlay(audioEl) {
 
   if (playPromise !== undefined) {
     playPromise.catch(() => {
-      // Le navigateur peut bloquer certains sons, ce n’est pas grave
+      // Le navigateur peut bloquer certains sons
     });
   }
 }
@@ -330,6 +330,7 @@ async function saveParticipation(prizeLabel) {
 
 function spin() {
   if (isSpinning) return;
+
   if (!currentEmail) {
     emailMessage.textContent = "Merci de valider votre email avant de jouer.";
     return;
@@ -341,14 +342,16 @@ function spin() {
 
   safePlay(spinSound);
 
-  const chosen = weightedPick(prizes);
   const slice = (Math.PI * 2) / prizes.length;
-  const idx = prizes.findIndex(
-    (p) => p.label === chosen.label && p.weight === chosen.weight
-  );
 
-  const targetMid = idx * slice + slice / 2;
-  const targetRotation = -Math.PI / 2 - targetMid;
+  // On choisit directement l'index gagnant
+  const chosenIndex = weightedPickIndex(prizes);
+  const chosen = prizes[chosenIndex];
+
+  // On vise le centre exact du segment gagnant
+  const segmentCenter = chosenIndex * slice + slice / 2;
+  const targetRotation = -Math.PI / 2 - segmentCenter;
+
   const extraTurns = (Math.PI * 2) * (5 + Math.random() * 1.5);
 
   const start = rotation;
