@@ -128,7 +128,7 @@ function drawWheel() {
   // Textes
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = "800 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.font = "400 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
   for (let i = 0; i < prizes.length; i++) {
     const ang = rotation + i * slice + slice / 2;
@@ -311,4 +311,5 @@ function spin() {
 injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
+
 
