@@ -125,6 +125,21 @@ function weightedPickIndex(items) {
   return items.length - 1;
 }
 
+function normalizeAngle(angle) {
+  const twoPi = Math.PI * 2;
+  return ((angle % twoPi) + twoPi) % twoPi;
+}
+
+function getPrizeIndexAtPointer() {
+  const slice = (Math.PI * 2) / prizes.length;
+  const pointerAngle = -Math.PI / 2; // flèche en haut
+
+  // angle réel sous la flèche dans le repère de la roue
+  const adjusted = normalizeAngle(pointerAngle - rotation);
+
+  return Math.floor(adjusted / slice) % prizes.length;
+}
+
 function wrapText(text, x, y, maxWidth, lineHeight) {
   const words = text.split(" ");
   let line = "";
@@ -344,12 +359,13 @@ function spin() {
 
   const slice = (Math.PI * 2) / prizes.length;
 
-  // On choisit directement l'index gagnant
+  // On choisit un index de destination pondéré
   const chosenIndex = weightedPickIndex(prizes);
-  const chosen = prizes[chosenIndex];
 
-  // On vise le centre exact du segment gagnant
+  // Centre du segment visé
   const segmentCenter = chosenIndex * slice + slice / 2;
+
+  // Rotation cible pour amener ce segment sous la flèche
   const targetRotation = -Math.PI / 2 - segmentCenter;
 
   const extraTurns = (Math.PI * 2) * (5 + Math.random() * 1.5);
@@ -373,13 +389,18 @@ function spin() {
       return;
     }
 
-    rotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    // Rotation finale normalisée
+    rotation = normalizeAngle(rotation);
     drawWheel();
+
+    // On lit le lot réellement sous la flèche
+    const landedIndex = getPrizeIndexAtPointer();
+    const landedPrize = prizes[landedIndex];
 
     safePlay(winSound);
     fireConfetti();
 
-    const insertError = await saveParticipation(chosen.label);
+    const insertError = await saveParticipation(landedPrize.label);
 
     if (insertError) {
       console.error("Erreur insertion Supabase :", insertError);
@@ -389,7 +410,7 @@ function spin() {
       return;
     }
 
-    resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+    resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
     isSpinning = false;
     btn.disabled = true;
   }
