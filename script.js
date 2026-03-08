@@ -1,3 +1,10 @@
+const SUPABASE_URL = "https://dzetwpgeykglhnnswtdv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_OChUJ4VPF1siv-uniYCCnQ_c-rLZyvy";
+
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+console.log("Supabase connecté", supabaseClient);
+
 const prizes = [
   { label: "Bon -10% sur votre achat", weight: 3 },
   { label: "Cadeau surprise 🎁", weight: 2 },
@@ -311,5 +318,6 @@ function spin() {
 injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
