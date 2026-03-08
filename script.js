@@ -395,7 +395,10 @@ function spin() {
     // On lit le lot réellement sous la flèche
     const landedIndex = getPrizeIndexAtPointer();
     const landedPrize = prizes[landedIndex];
-
+    
+rotation += (Math.random() - 0.5) * 0.02;
+drawWheel();
+    
     safePlay(winSound);
     fireConfetti();
 
@@ -426,6 +429,7 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
 
 
