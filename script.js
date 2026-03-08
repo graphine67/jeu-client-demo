@@ -1,6 +1,7 @@
 const SUPABASE_URL = "https://dzetwpgeykglhnnswtdv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_OChUJ4VPF1siv-uniYCCnQ_c-rLZyvy";
 const TABLE_NAME = "Participants";
+const EMAIL_FUNCTION_URL = "https://dzetwpgeykglhnnswtdv.supabase.co/functions/v1/send-graphine-email";
 
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -15,14 +16,14 @@ const prizes = [
   { label: "Lot mystère 🎁", weight: 1 }
 ];
 
-// Palette Graphine / festive
 const colors = [
   "#113e53",
   "#e85c6d",
   "#2a2a2f",
   "#efe2d0",
   "#2f3140",
-  "#cf4d5d"
+  "#cf4d5d",
+  "#113e53"
 ];
 
 const confettiColors = [
@@ -57,64 +58,108 @@ let currentEmail = "";
 let rotation = 0;
 let isSpinning = false;
 let confettiLayer = null;
+let emailValidated = false;
 
-// La roue est bloquée tant que l'email n'est pas validé
 btn.disabled = true;
+
+function setEmailMessage(message, type = "") {
+  emailMessage.textContent = message;
+  emailMessage.classList.remove("success", "error");
+
+  if (type) {
+    emailMessage.classList.add(type);
+  }
+}
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function hasAlreadyParticipated(email) {
+  const { data, error } = await supabaseClient
+    .from(TABLE_NAME)
+    .select("email")
+    .eq("email", email)
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+
+  return !!(data && data.length > 0);
+}
+
+async function sendGraphineEmail(email) {
+  try {
+    const response = await fetch(EMAIL_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Erreur fonction email :", result);
+      return false;
+    }
+
+    console.log("Email automatique envoyé :", result);
+    return true;
+  } catch (error) {
+    console.error("Erreur réseau envoi email :", error);
+    return false;
+  }
 }
 
 async function validateEmail() {
   const email = emailInput.value.trim().toLowerCase();
 
   if (!email) {
-    emailMessage.textContent = "Merci de saisir votre email.";
+    setEmailMessage("Merci de saisir votre email.", "error");
     return;
   }
 
   if (!isValidEmail(email)) {
-    emailMessage.textContent = "Adresse email invalide.";
+    setEmailMessage("Adresse email invalide.", "error");
     return;
   }
 
   if (!rgpdCheck.checked) {
-  emailMessage.textContent = "Merci d’accepter les conditions pour participer.";
-  return;
-}
+    setEmailMessage("Merci d’accepter les conditions pour participer.", "error");
+    return;
+  }
 
   emailBtn.disabled = true;
-  emailMessage.textContent = "Vérification en cours...";
+  btn.disabled = true;
+  setEmailMessage("Vérification en cours...");
 
   try {
-    const { data, error } = await supabaseClient
-      .from(TABLE_NAME)
-      .select("email")
-      .eq("email", email);
+    const alreadyPlayed = await hasAlreadyParticipated(email);
 
-    if (error) {
-      console.error("Erreur vérification Supabase :", error);
-      emailMessage.textContent = "Erreur : " + error.message;
+    if (alreadyPlayed) {
+      setEmailMessage("Vous avez déjà participé avec cet email.", "error");
       emailBtn.disabled = false;
-      return;
-    }
-
-    if (data && data.length > 0) {
-      emailMessage.textContent = "Vous avez déjà participé avec cet email.";
       btn.disabled = true;
-      emailBtn.disabled = false;
       return;
     }
 
     currentEmail = email;
-    emailMessage.textContent = "Email validé. Vous pouvez tourner la roue.";
-    btn.disabled = false;
-    emailBtn.disabled = true;
+    emailValidated = true;
+
+    setEmailMessage("Email validé. Vous pouvez tourner la roue.", "success");
+
     emailInput.disabled = true;
-  } catch (err) {
-    console.error("Erreur inattendue vérification :", err);
-    emailMessage.textContent = "Erreur inattendue lors de la vérification.";
+    rgpdCheck.disabled = true;
+    emailBtn.disabled = true;
+    btn.disabled = false;
+  } catch (error) {
+    console.error("Erreur vérification Supabase :", error);
+    setEmailMessage("Erreur lors de la vérification de l’email.", "error");
     emailBtn.disabled = false;
+    btn.disabled = true;
   }
 }
 
@@ -137,11 +182,8 @@ function normalizeAngle(angle) {
 
 function getPrizeIndexAtPointer() {
   const slice = (Math.PI * 2) / prizes.length;
-  const pointerAngle = -Math.PI / 2; // flèche en haut
-
-  // angle réel sous la flèche dans le repère de la roue
+  const pointerAngle = -Math.PI / 2;
   const adjusted = normalizeAngle(pointerAngle - rotation);
-
   return Math.floor(adjusted / slice) % prizes.length;
 }
 
@@ -253,7 +295,7 @@ function safePlay(audioEl) {
 
   if (playPromise !== undefined) {
     playPromise.catch(() => {
-      // Le navigateur peut bloquer certains sons
+      // son bloqué par le navigateur, on ignore
     });
   }
 }
@@ -348,31 +390,26 @@ async function saveParticipation(prizeLabel) {
   return error;
 }
 
-function spin() {
+async function spin() {
   if (isSpinning) return;
 
-  if (!currentEmail) {
-    emailMessage.textContent = "Merci de valider votre email avant de jouer.";
+  if (!emailValidated || !currentEmail) {
+    setEmailMessage("Merci de valider votre email avant de jouer.", "error");
+    btn.disabled = true;
     return;
   }
 
   isSpinning = true;
   btn.disabled = true;
   resultEl.textContent = "";
+  setEmailMessage("");
 
   safePlay(spinSound);
 
   const slice = (Math.PI * 2) / prizes.length;
-
-  // On choisit un index de destination pondéré
   const chosenIndex = weightedPickIndex(prizes);
-
-  // Centre du segment visé
   const segmentCenter = chosenIndex * slice + slice / 2;
-
-  // Rotation cible pour amener ce segment sous la flèche
   const targetRotation = -Math.PI / 2 - segmentCenter;
-
   const extraTurns = (Math.PI * 2) * (5 + Math.random() * 1.5);
 
   const start = rotation;
@@ -394,29 +431,27 @@ function spin() {
       return;
     }
 
-    // Rotation finale normalisée
     rotation = normalizeAngle(rotation);
     drawWheel();
 
-    // On lit le lot réellement sous la flèche
     const landedIndex = getPrizeIndexAtPointer();
     const landedPrize = prizes[landedIndex];
-    
-setTimeout(() => {
-  rotation += 0.06;
-  drawWheel();
-}, 60);
 
-setTimeout(() => {
-  rotation -= 0.09;
-  drawWheel();
-}, 120);
+    setTimeout(() => {
+      rotation += 0.06;
+      drawWheel();
+    }, 60);
 
-setTimeout(() => {
-  rotation += 0.04;
-  drawWheel();
-}, 180);
-    
+    setTimeout(() => {
+      rotation -= 0.09;
+      drawWheel();
+    }, 120);
+
+    setTimeout(() => {
+      rotation += 0.04;
+      drawWheel();
+    }, 180);
+
     safePlay(winSound);
     fireConfetti();
 
@@ -424,16 +459,20 @@ setTimeout(() => {
 
     if (insertError) {
       console.error("Erreur insertion Supabase :", insertError);
-      resultEl.textContent = "Erreur : " + insertError.message;
+      resultEl.textContent = "Erreur lors de l’enregistrement de la participation.";
       isSpinning = false;
       btn.disabled = true;
       return;
     }
 
+    await sendGraphineEmail(currentEmail);
+
     resultEl.textContent = "Suspense...";
-setTimeout(() => {
-  resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
-}, 800);
+
+    setTimeout(() => {
+      resultEl.textContent = `🎉 Résultat : ${landedPrize.label}`;
+    }, 800);
+
     isSpinning = false;
     btn.disabled = true;
   }
@@ -442,15 +481,9 @@ setTimeout(() => {
 }
 
 injectConfettiStyles();
-emailBtn.addEventListener("click", validateEmail);
-btn.addEventListener("click", spin);
 drawWheel();
 
+emailBtn.addEventListener("click", validateEmail);
+btn.addEventListener("click", spin);
+
 console.log("Supabase connecté :", supabaseClient);
-
-
-
-
-
-
-
