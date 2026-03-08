@@ -48,6 +48,7 @@ const resultEl = document.getElementById("result");
 const emailInput = document.getElementById("emailInput");
 const emailBtn = document.getElementById("emailBtn");
 const emailMessage = document.getElementById("emailMessage");
+const rgpdCheck = document.getElementById("rgpdCheck");
 
 const spinSound = document.getElementById("spinSound");
 const winSound = document.getElementById("winSound");
@@ -441,6 +442,7 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
 
 
