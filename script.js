@@ -365,8 +365,10 @@ function spin() {
 }
 
 injectConfettiStyles();
+emailBtn.addEventListener("click", validateEmail);
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
 
