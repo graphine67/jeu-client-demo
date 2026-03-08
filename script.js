@@ -6,13 +6,13 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const prizes = [
+  { label: "Merci d’avoir joué 🙂", weight: 4 },
   { label: "Bon -10% sur votre achat", weight: 3 },
-  { label: "Cadeau surprise 🎁", weight: 2 },
-  { label: "Boisson offerte 🥤", weight: 2 },
-  { label: "Goodie offert", weight: 2 },
   { label: "Participation au tirage au sort 🎟️", weight: 3 },
-  { label: "Lot mystère 🎁", weight: 1 },
-  { label: "Merci d’avoir joué 🙂", weight: 4 }
+  { label: "Goodie offert", weight: 2 },
+  { label: "Boisson offerte 🥤", weight: 2 },
+  { label: "Cadeau surprise 🎁", weight: 2 },
+  { label: "Lot mystère 🎁", weight: 1 }
 ];
 
 // Palette Graphine / festive
@@ -423,4 +423,5 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
