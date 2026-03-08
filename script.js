@@ -43,6 +43,11 @@ const accent = "#e85c6d";
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const btn = document.getElementById("spin");
+const emailInput = document.getElementById("emailInput");
+const emailBtn = document.getElementById("emailBtn");
+const emailMessage = document.getElementById("emailMessage");
+let currentEmail = "";
+btn.disabled = true;
 const resultEl = document.getElementById("result");
 
 const spinSound = document.getElementById("spinSound");
@@ -318,6 +323,7 @@ function spin() {
 injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
 
