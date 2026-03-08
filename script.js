@@ -396,8 +396,20 @@ function spin() {
     const landedIndex = getPrizeIndexAtPointer();
     const landedPrize = prizes[landedIndex];
     
-rotation += (Math.random() - 0.5) * 0.02;
-drawWheel();
+setTimeout(() => {
+  rotation += 0.06;
+  drawWheel();
+}, 60);
+
+setTimeout(() => {
+  rotation -= 0.09;
+  drawWheel();
+}, 120);
+
+setTimeout(() => {
+  rotation += 0.04;
+  drawWheel();
+}, 180);
     
     safePlay(winSound);
     fireConfetti();
@@ -429,6 +441,7 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
 
 
