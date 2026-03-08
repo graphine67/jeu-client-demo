@@ -78,6 +78,11 @@ async function validateEmail() {
     return;
   }
 
+  if (!rgpdCheck.checked) {
+  emailMessage.textContent = "Merci d’accepter les conditions pour participer.";
+  return;
+}
+
   emailBtn.disabled = true;
   emailMessage.textContent = "Vérification en cours...";
 
@@ -442,6 +447,7 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
 
 
 
