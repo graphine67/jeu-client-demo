@@ -10,10 +10,9 @@ const prizes = [
   { label: "Cadeau surprise 🎁", weight: 2 },
   { label: "Boisson offerte 🥤", weight: 2 },
   { label: "Goodie offert", weight: 2 },
-  { label: "Participation au tirage au sort", weight: 2 },
+  { label: "Participation au tirage au sort 🎟️", weight: 3 },
   { label: "Lot mystère 🎁", weight: 1 },
-  { label: "Merci d’avoir joué 🙂", weight: 4 },
-  { label: "Retente ta chance", weight: 3 },
+  { label: "Merci d’avoir joué 🙂", weight: 4 }
 ];
 
 // Palette Graphine / festive
@@ -424,3 +423,4 @@ btn.addEventListener("click", spin);
 drawWheel();
 
 console.log("Supabase connecté :", supabaseClient);
+
