@@ -1,10 +1,12 @@
 const prizes = [
-  { label: "-10%", weight: 3 },
-  { label: "Friandise offerte", weight: 2 },
-  { label: "Merci 🙂", weight: 4 },
-  { label: "-5%", weight: 3 },
-  { label: "Surprise", weight: 1 },
-  { label: "Retente", weight: 2 },
+  { label: "Bon -10% sur votre achat", weight: 3 },
+  { label: "Cadeau surprise 🎁", weight: 2 },
+  { label: "Boisson offerte 🥤", weight: 2 },
+  { label: "Goodie offert", weight: 2 },
+  { label: "Participation au tirage au sort", weight: 2 },
+  { label: "Lot mystère 🎁", weight: 1 },
+  { label: "Merci d’avoir joué 🙂", weight: 4 },
+  { label: "Retente ta chance", weight: 3 },
 ];
 
 // Palette Graphine / festive
@@ -309,3 +311,4 @@ function spin() {
 injectConfettiStyles();
 btn.addEventListener("click", spin);
 drawWheel();
+
