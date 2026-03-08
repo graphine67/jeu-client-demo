@@ -351,13 +351,29 @@ function spin() {
       rotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       drawWheel();
 
-      safePlay(winSound);
-      fireConfetti();
+     safePlay(winSound);
+fireConfetti();
 
-      resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+const { error: insertError } = await supabaseClient
+  .from("participants")
+  .insert([
+    {
+      email: currentEmail,
+      prize: chosen.label
+    }
+  ]);
 
-      isSpinning = false;
-      btn.disabled = false;
+if (insertError) {
+  resultEl.textContent = "Erreur lors de l'enregistrement.";
+  isSpinning = false;
+  btn.disabled = true;
+  return;
+}
+
+resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+
+isSpinning = false;
+btn.disabled = true;
     }
   }
 
@@ -368,6 +384,7 @@ injectConfettiStyles();
 emailBtn.addEventListener("click", validateEmail);
 btn.addEventListener("click", spin);
 drawWheel();
+
 
 
 
