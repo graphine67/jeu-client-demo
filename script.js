@@ -1,9 +1,9 @@
 const SUPABASE_URL = "https://dzetwpgeykglhnnswtdv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_OChUJ4VPF1siv-uniYCCnQ_c-rLZyvy";
+const TABLE_NAME = "Participants";
 
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-console.log("Supabase connecté", supabaseClient);
 
 const prizes = [
   { label: "Bon -10% sur votre achat", weight: 3 },
@@ -18,12 +18,12 @@ const prizes = [
 
 // Palette Graphine / festive
 const colors = [
-  "#113e53", // bleu pétrole
-  "#e85c6d", // corail
-  "#2a2a2f", // anthracite
-  "#efe2d0", // beige
-  "#2f3140", // gris bleuté
-  "#cf4d5d"  // corail foncé
+  "#113e53",
+  "#e85c6d",
+  "#2a2a2f",
+  "#efe2d0",
+  "#2f3140",
+  "#cf4d5d"
 ];
 
 const confettiColors = [
@@ -42,12 +42,25 @@ const accent = "#e85c6d";
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
+
 const btn = document.getElementById("spin");
+const resultEl = document.getElementById("result");
+
 const emailInput = document.getElementById("emailInput");
 const emailBtn = document.getElementById("emailBtn");
 const emailMessage = document.getElementById("emailMessage");
+
+const spinSound = document.getElementById("spinSound");
+const winSound = document.getElementById("winSound");
+
 let currentEmail = "";
+let rotation = 0;
+let isSpinning = false;
+let confettiLayer = null;
+
+// La roue est bloquée tant que l'email n'est pas validé
 btn.disabled = true;
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -68,38 +81,37 @@ async function validateEmail() {
   emailBtn.disabled = true;
   emailMessage.textContent = "Vérification en cours...";
 
-  const { data, error } = await supabaseClient
-    .from("participants")
-    .select("email")
-    .eq("email", email);
+  try {
+    const { data, error } = await supabaseClient
+      .from(TABLE_NAME)
+      .select("email")
+      .eq("email", email);
 
-  if (error) {
-    emailMessage.textContent = "Erreur de vérification. Réessaie.";
+    if (error) {
+      console.error("Erreur vérification Supabase :", error);
+      emailMessage.textContent = "Erreur : " + error.message;
+      emailBtn.disabled = false;
+      return;
+    }
+
+    if (data && data.length > 0) {
+      emailMessage.textContent = "Vous avez déjà participé avec cet email.";
+      btn.disabled = true;
+      emailBtn.disabled = false;
+      return;
+    }
+
+    currentEmail = email;
+    emailMessage.textContent = "Email validé. Vous pouvez tourner la roue.";
+    btn.disabled = false;
+    emailBtn.disabled = true;
+    emailInput.disabled = true;
+  } catch (err) {
+    console.error("Erreur inattendue vérification :", err);
+    emailMessage.textContent = "Erreur inattendue lors de la vérification.";
     emailBtn.disabled = false;
-    return;
   }
-
-  if (data && data.length > 0) {
-    emailMessage.textContent = "Vous avez déjà participé avec cet email.";
-    btn.disabled = true;
-    emailBtn.disabled = false;
-    return;
-  }
-
-  currentEmail = email;
-  emailMessage.textContent = "Email validé. Vous pouvez tourner la roue.";
-  btn.disabled = false;
-  emailBtn.disabled = true;
-  emailInput.disabled = true;
 }
-const resultEl = document.getElementById("result");
-
-const spinSound = document.getElementById("spinSound");
-const winSound = document.getElementById("winSound");
-
-let rotation = 0;
-let isSpinning = false;
-let confettiLayer = null;
 
 function weightedPick(items) {
   const total = items.reduce((sum, item) => sum + item.weight, 0);
@@ -146,7 +158,6 @@ function drawWheel() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // Ombre extérieure
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, radius + 2, 0, Math.PI * 2);
@@ -156,7 +167,6 @@ function drawWheel() {
   ctx.fill();
   ctx.restore();
 
-  // Segments
   for (let i = 0; i < prizes.length; i++) {
     const start = rotation + i * slice;
     const end = start + slice;
@@ -174,14 +184,12 @@ function drawWheel() {
     ctx.stroke();
   }
 
-  // Cercle extérieur
   ctx.beginPath();
   ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(255,255,255,0.10)";
   ctx.lineWidth = 6;
   ctx.stroke();
 
-  // Textes
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = "400 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
@@ -201,7 +209,6 @@ function drawWheel() {
     ctx.restore();
   }
 
-  // Cercle central décoratif
   ctx.beginPath();
   ctx.arc(cx, cy, 65, 0, Math.PI * 2);
   ctx.fillStyle = "#0b0d13";
@@ -226,7 +233,7 @@ function safePlay(audioEl) {
 
   if (playPromise !== undefined) {
     playPromise.catch(() => {
-      // certains navigateurs bloquent parfois le son
+      // Le navigateur peut bloquer certains sons, ce n’est pas grave
     });
   }
 }
@@ -248,8 +255,6 @@ function ensureConfettiLayer() {
 
 function fireConfetti() {
   const layer = ensureConfettiLayer();
-
-  // Vide les anciens confettis
   layer.innerHTML = "";
 
   const total = 140;
@@ -285,7 +290,6 @@ function fireConfetti() {
     layer.appendChild(piece);
   }
 
-  // nettoyage
   setTimeout(() => {
     if (layer) layer.innerHTML = "";
   }, 4500);
@@ -311,8 +315,25 @@ function injectConfettiStyles() {
   document.head.appendChild(style);
 }
 
+async function saveParticipation(prizeLabel) {
+  const { error } = await supabaseClient
+    .from(TABLE_NAME)
+    .insert([
+      {
+        email: currentEmail,
+        prize: prizeLabel
+      }
+    ]);
+
+  return error;
+}
+
 function spin() {
   if (isSpinning) return;
+  if (!currentEmail) {
+    emailMessage.textContent = "Merci de valider votre email avant de jouer.";
+    return;
+  }
 
   isSpinning = true;
   btn.disabled = true;
@@ -335,7 +356,6 @@ function spin() {
 
   const duration = 3200;
   const startTime = performance.now();
-
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
   async function animate(now) {
@@ -347,34 +367,28 @@ function spin() {
 
     if (progress < 1) {
       requestAnimationFrame(animate);
-    } else {
-      rotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      drawWheel();
-
-     safePlay(winSound);
-fireConfetti();
-
-const { error: insertError } = await supabaseClient
-  .from("participants")
-  .insert([
-    {
-      email: currentEmail,
-      prize: chosen.label
+      return;
     }
-  ]);
 
-if (insertError) {
-  resultEl.textContent = "Erreur lors de l'enregistrement.";
-  isSpinning = false;
-  btn.disabled = true;
-  return;
-}
+    rotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    drawWheel();
 
-resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+    safePlay(winSound);
+    fireConfetti();
 
-isSpinning = false;
-btn.disabled = true;
+    const insertError = await saveParticipation(chosen.label);
+
+    if (insertError) {
+      console.error("Erreur insertion Supabase :", insertError);
+      resultEl.textContent = "Erreur : " + insertError.message;
+      isSpinning = false;
+      btn.disabled = true;
+      return;
     }
+
+    resultEl.textContent = `🎉 Résultat : ${chosen.label}`;
+    isSpinning = false;
+    btn.disabled = true;
   }
 
   requestAnimationFrame(animate);
@@ -385,10 +399,4 @@ emailBtn.addEventListener("click", validateEmail);
 btn.addEventListener("click", spin);
 drawWheel();
 
-
-
-
-
-
-
-
+console.log("Supabase connecté :", supabaseClient);
